@@ -1,0 +1,21 @@
+# Terraform state and backup files
+*.tfstate
+*.tfstate.backup
+
+# Terraform working directory
+.terraform/
+
+# Terraform lock file
+.terraform.lock.hcl
+
+# Sensitive variable files
+*.tfvars
+
+# Environment and credentials
+.env
+*.pem
+
+# VSCode and OS files
+.vscode/
+.DS_Store
+*.log
