@@ -1,0 +1,18 @@
+version: 0.2
+
+phases:
+  install:
+    runtime-versions:
+      golang: 1.21
+    commands:
+      - echo Installing Go modules...
+      - cd test
+      - go mod init test || true
+      - go mod tidy
+      - cd ..
+
+  build:
+    commands:
+      - echo Running Terratest...
+      - cd test
+      - go test -v
