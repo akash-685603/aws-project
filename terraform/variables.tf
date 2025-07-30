@@ -4,8 +4,8 @@ variable "key_name" {
 }
 
 variable "subnet_id" {
-  description = "Subnet ID for EC2 instance"
-  type        = string
+  description = "Subnet ID(s) for EC2 instance"
+  type        = list(string)
 }
 
 variable "vpc_id" {
