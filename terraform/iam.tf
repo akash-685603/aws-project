@@ -1,4 +1,6 @@
+######################
 # CodeDeploy Role
+######################
 resource "aws_iam_role" "codedeploy_role" {
   name = "CodeDeployServiceRole"
   assume_role_policy = jsonencode({
@@ -18,7 +20,9 @@ resource "aws_iam_role_policy_attachment" "codedeploy_policy" {
   policy_arn = "arn:aws:iam::aws:policy/service-role/AWSCodeDeployRole"
 }
 
+######################
 # CodeBuild Role
+######################
 resource "aws_iam_role" "codebuild_role" {
   name = "CodeBuildServiceRole"
   assume_role_policy = jsonencode({
@@ -38,7 +42,9 @@ resource "aws_iam_role_policy_attachment" "codebuild_policy" {
   policy_arn = "arn:aws:iam::aws:policy/AWSCodeBuildDeveloperAccess"
 }
 
-# EC2 Role
+######################
+# EC2 Role (for SSM)
+######################
 resource "aws_iam_role" "ec2_role" {
   name = "EC2InstanceRole"
   assume_role_policy = jsonencode({
@@ -63,7 +69,9 @@ resource "aws_iam_role_policy_attachment" "ec2_ssm_policy" {
   policy_arn = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
 }
 
-# ✅ CodePipeline Role (this was missing)
+######################
+# CodePipeline Role
+######################
 resource "aws_iam_role" "codepipeline_role" {
   name = "CodePipelineServiceRole"
   assume_role_policy = jsonencode({

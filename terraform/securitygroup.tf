@@ -1,10 +1,9 @@
 resource "aws_security_group" "web_sg" {
   name        = "web-sg"
-  description = "Allow HTTP and SSH"
-  vpc_id      = var.vpc_id
+  description = "Allow web traffic"
+  vpc_id      = var.vpc_id   # ✅ Pass this in from terraform.tfvars or CLI
 
   ingress {
-    description = "Allow HTTP"
     from_port   = 80
     to_port     = 80
     protocol    = "tcp"
@@ -12,7 +11,6 @@ resource "aws_security_group" "web_sg" {
   }
 
   ingress {
-    description = "Allow SSH"
     from_port   = 22
     to_port     = 22
     protocol    = "tcp"
