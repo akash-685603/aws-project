@@ -1,100 +1,140 @@
-# This file defines the IAM roles and policies needed by CodePipeline and CodeBuild.
+############################
+# IAM for CodeBuild
+############################
 
-# Data source to get the current AWS account ID for unique resource naming
+resource "aws_iam_role" "codebuild_role" {
+  name = "codebuild-role"
 
-data "aws_caller_identity" "current" {}
-
-# Role for CodePipeline
-resource "aws_iam_role" "codepipeline_role" {
-  name = "${local.name_prefix}-codepipeline-role"
   assume_role_policy = jsonencode({
     Version = "2012-10-17",
     Statement = [{
-      Action    = "sts:AssumeRole",
-      Effect    = "Allow",
-      Principal = { Service = "codepipeline.amazonaws.com" }
+      Effect = "Allow",
+      Principal = {
+        Service = "codebuild.amazonaws.com"
+      },
+      Action = "sts:AssumeRole"
     }]
   })
-  tags = local.common_tags
 }
 
-# Policy for CodePipeline
-resource "aws_iam_policy" "codepipeline_policy" {
-  name        = "${local.name_prefix}-codepipeline-policy"
-  description = "Policy for AWS CodePipeline."
+resource "aws_iam_policy" "codebuild_policy" {
+  name = "codebuild-policy"
+
   policy = jsonencode({
     Version = "2012-10-17",
     Statement = [
       {
-        Action   = ["s3:GetObject", "s3:GetObjectVersion", "s3:GetBucketVersioning", "s3:PutObject", "s3:ListBucket"],
-        Effect   = "Allow",
-        Resource = [aws_s3_bucket.codepipeline_artifacts.arn, "${aws_s3_bucket.codepipeline_artifacts.arn}/*"]
-      },
-      {
-        Action   = ["codebuild:StartBuild", "codebuild:BatchGetBuilds"],
-        Effect   = "Allow",
-        Resource = aws_codebuild_project.main.arn
-      },
-      {
-        Action   = ["codestar-connections:UseConnection"],
-        Effect   = "Allow",
-        Resource = aws_codestarconnections_connection.github_connection.arn
-      },
-      {
-        Action   = ["codedeploy:CreateDeployment", "codedeploy:GetDeployment", "codedeploy:GetDeploymentConfig", "codedeploy:GetApplicationRevision", "codedeploy:RegisterApplicationRevision"],
-        Effect   = "Allow",
+        Effect = "Allow",
+        Action = [
+          "logs:*",
+          "s3:*",
+          "codebuild:*"
+        ],
         Resource = "*"
       }
     ]
   })
 }
 
-resource "aws_iam_role_policy_attachment" "codepipeline_attachment" {
-  role       = aws_iam_role.codepipeline_role.name
-  policy_arn = aws_iam_policy.codepipeline_policy.arn
+resource "aws_iam_role_policy_attachment" "attach_codebuild_policy" {
+  role       = aws_iam_role.codebuild_role.name
+  policy_arn = aws_iam_policy.codebuild_policy.arn
 }
 
-# Role for CodeBuild
-resource "aws_iam_role" "codebuild_role" {
-  name = "${local.name_prefix}-codebuild-role"
+############################
+# IAM for CodePipeline
+############################
+
+resource "aws_iam_role" "codepipeline_role" {
+  name = "codepipeline-role"
+
   assume_role_policy = jsonencode({
     Version = "2012-10-17",
     Statement = [{
-      Action    = "sts:AssumeRole",
-      Effect    = "Allow",
-      Principal = { Service = "codebuild.amazonaws.com" }
+      Effect = "Allow",
+      Principal = {
+        Service = "codepipeline.amazonaws.com"
+      },
+      Action = "sts:AssumeRole"
     }]
   })
-  tags = local.common_tags
 }
 
-# Policy for CodeBuild
-resource "aws_iam_policy" "codebuild_policy" {
-  name        = "${local.name_prefix}-codebuild-policy"
-  description = "Policy for AWS CodeBuild."
+resource "aws_iam_policy" "codepipeline_policy" {
+  name = "codepipeline-policy"
+
   policy = jsonencode({
     Version = "2012-10-17",
     Statement = [
       {
-        Action   = ["s3:GetObject", "s3:GetObjectVersion", "s3:PutObject", "s3:ListBucket"],
-        Effect   = "Allow",
-        Resource = [aws_s3_bucket.codepipeline_artifacts.arn, "${aws_s3_bucket.codepipeline_artifacts.arn}/*"]
-      },
-      {
-        Action   = ["logs:CreateLogGroup", "logs:CreateLogStream", "logs:PutLogEvents"],
-        Effect   = "Allow",
-        Resource = ["arn:aws:logs:${var.aws_region}:${data.aws_caller_identity.current.account_id}:log-group:/aws/codebuild/${local.name_prefix}-build:*"]
-      },
-      {
-        Action   = ["codestar-connections:UseConnection"],
-        Effect   = "Allow",
-        Resource = aws_codestarconnections_connection.github_connection.arn
+        Effect = "Allow",
+        Action = [
+          "s3:*",
+          "codebuild:*",
+          "codedeploy:*",
+          "codestar-connections:UseConnection",
+          "iam:PassRole"
+        ],
+        Resource = "*"
       }
     ]
   })
 }
 
-resource "aws_iam_role_policy_attachment" "codebuild_attachment" {
-  role       = aws_iam_role.codebuild_role.name
-  policy_arn = aws_iam_policy.codebuild_policy.arn
+resource "aws_iam_role_policy_attachment" "attach_codepipeline_policy" {
+  role       = aws_iam_role.codepipeline_role.name
+  policy_arn = aws_iam_policy.codepipeline_policy.arn
+}
+
+############################
+# IAM for EC2 (CodeDeploy agent)
+############################
+
+resource "aws_iam_role" "ec2_codedeploy_role" {
+  name = "ec2-codedeploy-role"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17",
+    Statement = [{
+      Effect = "Allow",
+      Principal = {
+        Service = "ec2.amazonaws.com"
+      },
+      Action = "sts:AssumeRole"
+    }]
+  })
+}
+
+resource "aws_iam_role_policy_attachment" "ec2_codedeploy_attach" {
+  role       = aws_iam_role.ec2_codedeploy_role.name
+  policy_arn = "arn:aws:iam::aws:policy/AmazonEC2RoleforAWSCodeDeploy"
+}
+
+resource "aws_iam_instance_profile" "ec2_codedeploy" {
+  name = "ec2-codedeploy-profile"
+  role = aws_iam_role.ec2_codedeploy_role.name
+}
+
+############################
+# IAM for CodeDeploy itself
+############################
+
+resource "aws_iam_role" "codedeploy_role" {
+  name = "codedeploy-service-role"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17",
+    Statement = [{
+      Effect = "Allow",
+      Principal = {
+        Service = "codedeploy.amazonaws.com"
+      },
+      Action = "sts:AssumeRole"
+    }]
+  })
+}
+
+resource "aws_iam_role_policy_attachment" "codedeploy_attach" {
+  role       = aws_iam_role.codedeploy_role.name
+  policy_arn = "arn:aws:iam::aws:policy/service-role/AWSCodeDeployRole"
 }

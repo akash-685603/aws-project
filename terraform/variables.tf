@@ -1,33 +1,23 @@
-
-variable "project_name" {
-  description = "A unique name for your project."
-  type        = string
+variable "region" {
+  default = "us-east-1"
 }
 
-variable "environment" {
-  description = "The environment for the deployment (e.g., 'dev', 'prod')."
-  type        = string
-  default     = "dev"
+variable "ami_id" {
+  description = "AMI ID for EC2 instance"
 }
 
-variable "aws_region" {
-  description = "The AWS region where resources will be created."
-  type        = string
+variable "instance_type" {
+  default = "t2.micro"
 }
 
-
-variable "github_repo_owner" {
-  description = "The owner of the GitHub repository (e.g., your GitHub username)."
-  type        = string
+variable "key_name" {
+  description = "EC2 key pair name"
 }
 
-variable "github_repo_name" {
-  description = "The name of the GitHub repository."
-  type        = string
+variable "vpc_id" {
+  description = "VPC ID for security group"
 }
 
-variable "github_branch" {
-  description = "The branch to be used by CodePipeline."
-  type        = string
-  default     = "main"
+variable "subnet_id" {
+  description = "Subnet ID for EC2 instance"
 }

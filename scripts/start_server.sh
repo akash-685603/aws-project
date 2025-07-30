@@ -1,4 +1,3 @@
 #!/bin/bash
-# This script starts the Apache-web-server (httpd)
-service httpd start
-chkconfig httpd on
+echo "Starting Apache Web Server"
+sudo systemctl start apache2
