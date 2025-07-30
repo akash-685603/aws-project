@@ -1,3 +1,32 @@
+variable "region" {
+  default = "us-east-1" # Change to your AWS region
+}
+
+variable "ami_id" {
+  default = "ami-0c55b159cbfafe1f0" # Example Amazon Linux 2 AMI (update per region)
+}
+
+variable "instance_type" {
+  default = "t2.micro"
+}
+
+variable "key_name" {
+  default = "your-key-name" # Change to your actual key pair
+}
+
+variable "vpc_id" {
+  default = "vpc-xxxxxxxxxxxxxxx" # Change to your VPC ID
+}
+
+variable "subnet_id" {
+  default = "subnet-xxxxxxxxxxx" # Change to your Subnet ID
+}
+
+provider "aws" {
+  region = var.region
+}
+
+# EC2 Instance
 resource "aws_instance" "web" {
   ami                    = var.ami_id
   instance_type          = var.instance_type
@@ -23,6 +52,7 @@ resource "aws_instance" "web" {
               EOF
 }
 
+# Security Group
 resource "aws_security_group" "web_sg" {
   name        = "web-sg"
   description = "Allow HTTP and SSH"
@@ -50,23 +80,42 @@ resource "aws_security_group" "web_sg" {
   }
 }
 
-resource "aws_iam_instance_profile" "ec2_profile" {
-  name = "ec2-codedeploy-profile"
-  role = aws_iam_role.ec2_role.name
-}
-
+# IAM Role for EC2
 resource "aws_iam_role" "ec2_role" {
   name = "ec2-role"
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17",
-    Statement = [{
-      Effect = "Allow",
-      Principal = {
-        Service = "ec2.amazonaws.com"
-      },
-      Action = "sts:AssumeRole"
-    }]
+    Statement = [
+      {
+        Effect = "Allow",
+        Principal = {
+          Service = "ec2.amazonaws.com"
+        },
+        Action = "sts:AssumeRole"
+      }
+    ]
   })
 }
 
+# IAM Instance Profile
+resource "aws_iam_instance_profile" "ec2_profile" {
+  name = "ec2-codedeploy-profile"
+  role = aws_iam_role.ec2_role.name
+}
+
+# IAM Policy Attachments
+resource "aws_iam_role_policy_attachment" "codedeploy" {
+  role       = aws_iam_role.ec2_role.name
+  policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonEC2RoleforAWSCodeDeploy"
+}
+
+resource "aws_iam_role_policy_attachment" "cloudwatch_logs" {
+  role       = aws_iam_role.ec2_role.name
+  policy_arn = "arn:aws:iam::aws:policy/CloudWatchAgentServerPolicy"
+}
+
+# Output public IP
+output "instance_public_ip" {
+  value = aws_instance.web.public_ip
+}
