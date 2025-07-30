@@ -1,3 +1,5 @@
+version: 0.2
+
 phases:
   install:
     runtime-versions:
@@ -5,7 +7,12 @@ phases:
     commands:
       - echo "Installing dependencies"
       - go mod tidy
+
   build:
     commands:
       - echo "Running tests"
       - go test -v -timeout 30m ./...
+
+artifacts:
+  files:
+    - '**/*'
