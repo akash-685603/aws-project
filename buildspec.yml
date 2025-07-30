@@ -2,17 +2,11 @@ version: 0.2
 
 phases:
   install:
-    runtime-versions:
-      golang: 1.21
     commands:
-      - echo "Installing dependencies"
-      - go mod tidy
-
+      - echo "No dependencies to install"
   build:
     commands:
-      - echo "Running tests"
-      - go test -v -timeout 30m ./...
-
+      - echo "No build step required for static site"
 artifacts:
   files:
     - '**/*'
