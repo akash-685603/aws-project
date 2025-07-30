@@ -90,3 +90,70 @@ resource "aws_iam_role_policy_attachment" "codepipeline_policy" {
   role       = aws_iam_role.codepipeline_role.name
   policy_arn = "arn:aws:iam::aws:policy/AWSCodePipeline_FullAccess"
 }
+resource "aws_iam_role_policy" "codepipeline_s3_policy" {
+  name   = "CodePipelineS3PutObject"
+  role   = aws_iam_role.codepipeline_role.name
+  policy = file("${path.module}/codepipeline-s3-policy.json")
+}
+resource "aws_iam_role_policy" "codepipeline_startbuild_policy" {
+  name = "AllowCodePipelineToStartBuild"
+  role = aws_iam_role.codepipeline_role.name
+
+  policy = jsonencode({
+    Version = "2012-10-17",
+    Statement = [
+      {
+        Effect = "Allow",
+        Action = [
+          "codebuild:BatchGetBuilds",
+          "codebuild:StartBuild"
+        ],
+        Resource = "arn:aws:codebuild:us-east-1:418295704953:project/codebuild-project"
+      }
+    ]
+  })
+}
+resource "aws_iam_role_policy" "codebuild_logs_policy" {
+  name = "AllowCodeBuildLogs"
+  role = aws_iam_role.codebuild_role.name
+
+  policy = jsonencode({
+    Version = "2012-10-17",
+    Statement = [
+      {
+        Effect = "Allow",
+        Action = [
+          "logs:CreateLogGroup",
+          "logs:CreateLogStream",
+          "logs:PutLogEvents"
+        ],
+        Resource = [
+          "arn:aws:logs:us-east-1:418295704953:log-group:/aws/codebuild/*"
+        ]
+      }
+    ]
+  })
+}
+resource "aws_iam_role_policy" "codebuild_s3_access" {
+  name = "AllowCodeBuildToGetFromS3"
+  role = aws_iam_role.codebuild_role.name
+
+  policy = jsonencode({
+    Version = "2012-10-17",
+    Statement = [
+      {
+        Effect = "Allow",
+        Action = [
+          "s3:GetObject",
+          "s3:GetObjectVersion",
+          "s3:GetBucketVersioning"
+        ],
+        Resource = [
+          "arn:aws:s3:::codepipeline-artifacts-akash-unique",
+          "arn:aws:s3:::codepipeline-artifacts-akash-unique/*"
+        ]
+      }
+    ]
+  })
+}
+

@@ -4,19 +4,19 @@ resource "aws_codestarconnections_connection" "github_connection" {
 }
 
 resource "aws_codebuild_project" "main" {
-  name          = "codebuild-project"
-  description   = "Build project for CodePipeline"
-  service_role  = aws_iam_role.codebuild_role.arn
+  name         = "codebuild-project"
+  description  = "Build project for CodePipeline"
+  service_role = aws_iam_role.codebuild_role.arn
 
   artifacts {
     type = "CODEPIPELINE"
   }
 
   environment {
-    compute_type                = "BUILD_GENERAL1_SMALL"
-    image                       = "aws/codebuild/standard:5.0"
-    type                        = "LINUX_CONTAINER"
-    privileged_mode             = true
+    compute_type    = "BUILD_GENERAL1_SMALL"
+    image           = "aws/codebuild/standard:5.0"
+    type            = "LINUX_CONTAINER"
+    privileged_mode = true
   }
 
   source {
@@ -51,7 +51,7 @@ resource "aws_codepipeline" "main" {
 
       configuration = {
         ConnectionArn    = aws_codestarconnections_connection.github_connection.arn
-        FullRepositoryId = "akash-685603/aws-project"  # Change to your GitHub repo
+        FullRepositoryId = "akash-685603/aws-project" # Change to your GitHub repo
         BranchName       = "main"
       }
     }
