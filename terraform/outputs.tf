@@ -10,5 +10,5 @@ output "codepipeline_name" {
 
 output "ec2_public_dns" {
   description = "Public DNS of the EC2 instance"
-  value       = aws_instance.app_instance.public_dns
+  value       = aws_instance.web.public_dns
 }
