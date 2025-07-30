@@ -1,19 +1,19 @@
-terraform {
-  backend "s3" {
-    bucket         = "terraform-state-locking-bucket-akash"
-    key            = "ci-cd/codepipeline-project/terraform.tfstate"
-    region         = "us-east-1"
-    dynamodb_table = "terraform-lock-table"
-  }
-
-  required_providers {
-    aws = {
-      source  = "hashicorp/aws"
-      version = "~> 5.0"
-    }
-  }
-}
-
 provider "aws" {
   region = "us-east-1"
+}
+
+module "vpc" {
+  source  = "terraform-aws-modules/vpc/aws"
+  version = "5.1.2"
+
+  name = "my-vpc"
+  cidr = "10.0.0.0/16"
+
+  azs             = ["us-east-1a"]
+  public_subnets  = ["10.0.1.0/24"]
+  enable_dns_hostnames = true
+
+  tags = {
+    Name = "my-vpc"
+  }
 }
